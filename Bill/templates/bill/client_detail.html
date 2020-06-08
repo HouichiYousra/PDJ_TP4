@@ -1,0 +1,28 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta charset="utf-8">
+  </head>
+  <body>
+  <h2>Client N° {{ client.id }}</h2>
+  Nom: {{ client.nom }}
+  <br>
+  Prénom: {{ client.prenom }}
+  <br>
+  Adresse: {{ client.adresse }}
+  <br>
+  Téléphone: {{ client.tel }}
+  <br>
+  Sexe: {{ client.sexe }}
+  <br><br>
+  <h3>Factures</h3>
+  <!-- on affiche les factures du client -->
+  <table>
+  {% for facture in client.factures.all %}
+  	<tr>
+  		<td>{{ facture.date }}</td>
+  	</tr>
+  {% endfor %}
+  </table>
+  </body>
+</html>

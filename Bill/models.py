@@ -15,7 +15,7 @@ class Client(models.Model):
     adresse = models.TextField(null=True, blank=True)
     tel = models.CharField(max_length = 10, null=True, blank=True)
     sexe = models.CharField(max_length=1, choices = SEXE)
-    
+
     def __str__(self):
         return self.nom + ' ' + self.prenom
 
@@ -28,7 +28,7 @@ class Produit(models.Model):
     
     
 class Facture(models.Model):
-    client = models.ForeignKey(Client, on_delete=models.CASCADE)
+    client = models.ForeignKey(Client, on_delete=models.CASCADE,related_name='factures')
     date = models.DateField(default=utils.timezone.now)
     def get_absolute_url(self):
         return reverse('facture_detail', kwargs={'pk': self.id})
