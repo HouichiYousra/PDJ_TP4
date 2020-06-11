@@ -3,7 +3,7 @@ from django.db.models import Count
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView
 
-from Bill.models import Facture, LigneFacture, Client
+from Bill.models import Facture, LigneFacture, Client, Fournisseur
 from django.views.generic.edit import UpdateView, CreateView, DeleteView
 from django.views.generic.detail import DetailView
 import django_tables2 as tables
@@ -15,13 +15,13 @@ from django.urls import reverse, reverse_lazy
 
 
 # Create your views here.
-
 def facture_detail_view(request, pk):
     facture = get_object_or_404(Facture, id=pk)
+    total = facture.calculPrixTotal()
     context={}
     context['facture'] = facture
+    context['prix'] = total
     return render(request, 'bill/facture_detail.html', context)
-
 
 def client_detail_view(request, pk):
     client = get_object_or_404(Client, id=pk)
@@ -166,3 +166,47 @@ class FactureCreateView(CreateView):
         form.helper.add_input(Button('cancel', 'Annuler', css_class='btn-secondary', onclick="window.history.back()"))
         self.success_url = reverse('client_factures_table', kwargs={'pk': self.kwargs.get('client_pk')})
         return form
+
+
+class FournisseurCreateView(CreateView):
+    model = Fournisseur
+    template_name = 'bill/fournisseur_create.html'
+    fields = '__all__'
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.helper = FormHelper()
+
+        form.helper.add_input(Submit('submit', 'Créer', css_class='btn-primary'))
+        form.helper.add_input(Button('cancel', 'Annuler', css_class='btn-secondary', onclick="window.history.back()"))
+        self.success_url = reverse_lazy('fournisseurs_table')
+        return form
+
+
+class FournisseurDeleteView(DeleteView):
+    model = Fournisseur
+    template_name = 'bill/fournisseur_delete.html'
+
+    def get_success_url(self):
+        self.success_url = reverse_lazy('fournisseurs_table')
+
+
+class FournisseurUpdateView(UpdateView):
+    model = Fournisseur
+    fields = '__all__'
+    template_name = 'bill/fournisseur_update.html'
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.helper = FormHelper()
+
+        form.helper.add_input(Submit('submit', 'Modifier', css_class='btn-primary'))
+        form.helper.add_input(Button('cancel', 'Annuler', css_class='btn-secondary', onclick="window.history.back()"))
+        self.success_url = reverse('fournisseurs_table')
+        return form
+
+class FournisseurListView(ListView):
+    template_name = 'bill/fournisseurs_table.html'
+    queryset = Fournisseur.objects.all()
+    context_object_name = 'fournisseurs'
+    paginate_by = 10

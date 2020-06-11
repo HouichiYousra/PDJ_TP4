@@ -19,4 +19,10 @@ urlpatterns = [
     re_path(r'^client/(?P<pk>\d+)/factures_table/', views.ClientFacturesListView.as_view(), name='client_factures_table'),
     re_path(r'^client/(?P<client_pk>\d+)/facture_create/', views.FactureCreateView.as_view(), name='facture_create'),
     path('admin/', admin.site.urls),
+    re_path(r'^fournisseurs_table/', views.FournisseurListView.as_view(), name='fournisseurs_table'),
+    re_path(r'^fournisseur_create/', views.FournisseurCreateView.as_view(), name='fournisseur_create'),
+    re_path(r'^fournisseur_delete/(?P<pk>\d+)/$', views.FournisseurDeleteView.as_view(),
+            name='fournisseur_delete'),
+    re_path(r'^fournisseur_update/(?P<pk>\d+)/$', views.FournisseurUpdateView.as_view(),
+            name='fournisseur_update'),
 ]
