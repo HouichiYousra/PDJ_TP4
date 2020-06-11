@@ -25,4 +25,6 @@ urlpatterns = [
             name='fournisseur_delete'),
     re_path(r'^fournisseur_update/(?P<pk>\d+)/$', views.FournisseurUpdateView.as_view(),
             name='fournisseur_update'),
+    re_path(r'^fournisseur/(?P<pk>\d+)/produits_table/', views.FournisseurProduitsListView.as_view(), name='fournisseur_produits_table'),
+    re_path(r'^fournisseur/(?P<fournisseur_pk>\d+)/produit_create/', views.ProduitCreateView.as_view(), name='produit_create'),
 ]

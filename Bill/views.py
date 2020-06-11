@@ -3,7 +3,7 @@ from django.db.models import Count
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView
 
-from Bill.models import Facture, LigneFacture, Client, Fournisseur
+from Bill.models import Facture, LigneFacture, Client, Fournisseur, Produit
 from django.views.generic.edit import UpdateView, CreateView, DeleteView
 from django.views.generic.detail import DetailView
 import django_tables2 as tables
@@ -186,9 +186,7 @@ class FournisseurCreateView(CreateView):
 class FournisseurDeleteView(DeleteView):
     model = Fournisseur
     template_name = 'bill/fournisseur_delete.html'
-
-    def get_success_url(self):
-        self.success_url = reverse_lazy('fournisseurs_table')
+    success_url = reverse_lazy('fournisseurs_table')
 
 
 class FournisseurUpdateView(UpdateView):
@@ -210,3 +208,35 @@ class FournisseurListView(ListView):
     queryset = Fournisseur.objects.all()
     context_object_name = 'fournisseurs'
     paginate_by = 10
+
+
+class FournisseurProduitsListView(ListView):
+    template_name = 'bill/fournisseur_produits_table.html'
+    context_object_name = 'produits'
+    paginate_by = 10
+
+    def get_queryset(self):
+        fournisseur=self.kwargs['pk']
+        return Produit.objects.filter(fournisseur_id=fournisseur)
+
+    def get_context_data(self, **kwargs):
+        context = super(FournisseurProduitsListView, self).get_context_data(**kwargs)
+        context['fournisseur'] = self.kwargs['pk']
+        return context
+
+
+class ProduitCreateView(CreateView):
+    model = Produit
+    template_name = 'bill/produit_create.html'
+    fields = '__all__'
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.helper = FormHelper()
+
+        form.fields['fournisseur'] = forms.ModelChoiceField(
+            queryset=Fournisseur.objects.filter(id=self.kwargs.get('fournisseur_pk')), initial=0)
+        form.helper.add_input(Submit('submit', 'Créer', css_class='btn-primary'))
+        form.helper.add_input(Button('cancel', 'Annuler', css_class='btn-secondary', onclick="window.history.back()"))
+        self.success_url = reverse('fournisseur_produits_table', kwargs={'pk': self.kwargs.get('fournisseur_pk')})
+        return form
