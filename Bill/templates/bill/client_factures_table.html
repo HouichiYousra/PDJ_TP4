@@ -10,11 +10,11 @@
   <h2>Table des factures</h2>
   <br><br>
   <!-- on affiche un bouton pour ajouter un nouveau client -->
-  <a href="{% url 'facture_create' client_pk=client%}" class="btn btn-primary">Ajouter facture</a>
+  <a href="{% url 'facture_create' client_pk=object.id %}" class="btn btn-primary">Ajouter facture</a>
   <br><br>
   <div class="col-lg-6">
   <!-- on affiche les clients -->
-	{% render_table factures %}
+	{% render_table table %}
   </div>
   </body>
 </html>

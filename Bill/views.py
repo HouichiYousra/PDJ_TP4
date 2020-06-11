@@ -1,7 +1,7 @@
 from bootstrap_datepicker_plus import DatePickerInput
-from django.db.models import Count
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView
+from django_tables2 import SingleTableView
 
 from Bill.models import Facture, LigneFacture, Client, Fournisseur, Produit
 from django.views.generic.edit import UpdateView, CreateView, DeleteView
@@ -34,6 +34,16 @@ class FactureUpdate(UpdateView):
     fields = ['client', 'date']
     template_name = 'bill/update.html'
 
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.helper = FormHelper()
+
+        form.fields['client']=forms.ModelChoiceField(queryset=Client.objects.filter(id=self.kwargs.get('client_pk')), initial=0)
+        form.helper.add_input(Submit('submit','Modifier', css_class='btn-primary'))
+        form.helper.add_input(Button('cancel', 'Annuler', css_class='btn-secondary', onclick="window.history.back()"))
+        self.success_url = reverse('client_factures_table', kwargs={'pk':self.kwargs.get('client_pk')})
+        return form
+
 class LigneFactureTable(tables.Table):
     action= '<a href="{% url "lignefacture_update" pk=record.id facture_pk=record.facture.id %}" class="btn btn-warning">Modifier</a>\
             <a href="{% url "lignefacture_delete" pk=record.id facture_pk=record.facture.id %}" class="btn btn-danger">Supprimer</a>'
@@ -42,7 +52,6 @@ class LigneFactureTable(tables.Table):
         model = LigneFacture
         template_name = "django_tables2/bootstrap4.html"
         fields = ('produit__designation','produit__id', 'produit__prix', 'qte' )
-
 
 class FactureDetailView(DetailView):
     template_name = 'bill/facture_table_detail.html'
@@ -55,6 +64,12 @@ class FactureDetailView(DetailView):
         RequestConfig(self.request, paginate={"per_page": 2}).configure(table)
         context['table'] = table
         return context
+
+class FactureDelete(DeleteView):
+    model = Facture
+    template_name = 'bill/facture_delete.html'
+    def get_success_url(self):
+        self.success_url = reverse('client_factures_table', kwargs={'pk':self.kwargs.get('client_pk')})
 
 class LigneFactureCreateView(CreateView):
     model = LigneFacture
@@ -93,12 +108,19 @@ class LigneFactureDeleteView(DeleteView):
     def get_success_url(self):
         self.success_url = reverse('facture_table_detail', kwargs={'pk':self.kwargs.get('facture_pk')})
 
+class ClientListTable(tables.Table):
+    action= '<a href="{% url "client_update" pk=record.id %}" class="btn btn-warning">Modifier</a>\
+            <a href="{% url "client_delete" pk=record.id  %}" class="btn btn-danger">Supprimer</a>\
+            <a href="{% url "client_factures_table" pk=record.id %}" class="btn btn-primary">Liste de factures</a>'
+    edit   = tables.TemplateColumn(action)
+    class Meta:
+        model = Client
+        template_name = "django_tables2/bootstrap4.html"
 
-class ClientListView(ListView):
+class ClientListView(SingleTableView):
     template_name = 'bill/clients_table.html'
-    queryset = Client.objects.all()
-    context_object_name = 'clients'
-    paginate_by = 10
+    model= Client
+    table_class = ClientListTable
 
 class ClientCreateView(CreateView):
     model = Client
@@ -114,7 +136,6 @@ class ClientCreateView(CreateView):
         self.success_url = reverse('clients_table')
         return form
 
-
 class ClientUpdateView(UpdateView):
     model = Client
     template_name = 'bill/client_update.html'
@@ -129,26 +150,31 @@ class ClientUpdateView(UpdateView):
         self.success_url = reverse('clients_table')
         return form
 
-
 class ClientDeleteView(DeleteView):
     model = Client
     template_name = 'bill/client_delete.html'
     success_url = reverse_lazy('clients_table')
 
-class ClientFacturesListView(ListView):
-    template_name = 'bill/client_factures_table.html'
-    context_object_name = 'factures'
-    paginate_by = 10
+class ClientFacturesListTable(tables.Table):
+    action = '<a href="{% url "facture_update" pk=record.id client_pk=record.client.id %}" class="btn btn-warning">Modifier</a>\
+            <a href="{% url "facture_delete" pk=record.id client_pk=record.client.id %}" class="btn btn-danger">Supprimer</a>'
+    edit = tables.TemplateColumn(action)
 
-    def get_queryset(self):
-        client=self.kwargs['pk']
-        return Facture.objects.filter(client_id=client)
+    class Meta:
+        model = Facture
+        template_name = "django_tables2/bootstrap4.html"
+
+class ClientFacturesListView(DetailView):
+    template_name = 'bill/client_factures_table.html'
+    model = Client
 
     def get_context_data(self, **kwargs):
         context = super(ClientFacturesListView, self).get_context_data(**kwargs)
-        context['client'] = self.kwargs['pk']
-        return context
 
+        table = ClientFacturesListTable(Facture.objects.filter(client=self.kwargs.get('pk')))
+        RequestConfig(self.request, paginate={"per_page": 2}).configure(table)
+        context['table'] = table
+        return context
 
 class FactureCreateView(CreateView):
     model = Facture
@@ -167,7 +193,6 @@ class FactureCreateView(CreateView):
         self.success_url = reverse('client_factures_table', kwargs={'pk': self.kwargs.get('client_pk')})
         return form
 
-
 class FournisseurCreateView(CreateView):
     model = Fournisseur
     template_name = 'bill/fournisseur_create.html'
@@ -182,12 +207,10 @@ class FournisseurCreateView(CreateView):
         self.success_url = reverse_lazy('fournisseurs_table')
         return form
 
-
 class FournisseurDeleteView(DeleteView):
     model = Fournisseur
     template_name = 'bill/fournisseur_delete.html'
     success_url = reverse_lazy('fournisseurs_table')
-
 
 class FournisseurUpdateView(UpdateView):
     model = Fournisseur
@@ -203,25 +226,39 @@ class FournisseurUpdateView(UpdateView):
         self.success_url = reverse('fournisseurs_table')
         return form
 
-class FournisseurListView(ListView):
+class FournisseurListTable(tables.Table):
+    action= '<a href="{% url "fournisseur_update" pk=record.id %}" class="btn btn-warning">Modifier</a>\
+            <a href="{% url "fournisseur_delete" pk=record.id  %}" class="btn btn-danger">Supprimer</a>\
+            <a href="{% url "fournisseur_produits_table" pk=record.id %}" class="btn btn-primary">Liste de factures</a>'
+    edit   = tables.TemplateColumn(action)
+    class Meta:
+        model = Fournisseur
+        template_name = "django_tables2/bootstrap4.html"
+
+class FournisseurListView(SingleTableView):
     template_name = 'bill/fournisseurs_table.html'
-    queryset = Fournisseur.objects.all()
-    context_object_name = 'fournisseurs'
-    paginate_by = 10
+    model= Fournisseur
+    table_class = FournisseurListTable
 
+class FournisseurProduitsListTable(tables.Table):
+    action = '<a href="{% url "produit_update" pk=record.id fournisseur_pk=record.fournisseur.id %}" class="btn btn-warning">Modifier</a>\
+            <a href="{% url "produit_delete" pk=record.id fournisseur_pk=record.fournisseur.id %}" class="btn btn-danger">Supprimer</a>'
+    edit = tables.TemplateColumn(action)
 
-class FournisseurProduitsListView(ListView):
+    class Meta:
+        model = Produit
+        template_name = "django_tables2/bootstrap4.html"
+
+class FournisseurProduitsListView(DetailView):
     template_name = 'bill/fournisseur_produits_table.html'
-    context_object_name = 'produits'
-    paginate_by = 10
-
-    def get_queryset(self):
-        fournisseur=self.kwargs['pk']
-        return Produit.objects.filter(fournisseur_id=fournisseur)
+    model = Fournisseur
 
     def get_context_data(self, **kwargs):
         context = super(FournisseurProduitsListView, self).get_context_data(**kwargs)
-        context['fournisseur'] = self.kwargs['pk']
+
+        table = FournisseurProduitsListTable(Produit.objects.filter(fournisseur=self.kwargs.get('pk')))
+        RequestConfig(self.request, paginate={"per_page": 2}).configure(table)
+        context['table'] = table
         return context
 
 
@@ -240,3 +277,23 @@ class ProduitCreateView(CreateView):
         form.helper.add_input(Button('cancel', 'Annuler', css_class='btn-secondary', onclick="window.history.back()"))
         self.success_url = reverse('fournisseur_produits_table', kwargs={'pk': self.kwargs.get('fournisseur_pk')})
         return form
+
+class ProduitUpdateView(UpdateView):
+    model = Produit
+    template_name = 'bill/produit_update.html'
+    fields = '__all__'
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.helper = FormHelper()
+
+        form.helper.add_input(Submit('submit', 'Modifier', css_class='btn-primary'))
+        form.helper.add_input(Button('cancel', 'Annuler', css_class='btn-secondary', onclick="window.history.back()"))
+        self.success_url = reverse('fournisseur_produits_table', kwargs={'pk':self.kwargs.get('fournisseur_pk')})
+        return form
+
+class ProduitDeleteView(DeleteView):
+    model = Produit
+    template_name = 'bill/Produit_delete.html'
+    def get_success_url(self):
+        self.success_url = reverse('fournisseur_produits_table', kwargs={'pk':self.kwargs.get('fournisseur_pk')})

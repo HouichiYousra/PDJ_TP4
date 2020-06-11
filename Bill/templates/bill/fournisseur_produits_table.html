@@ -10,11 +10,11 @@
   <h2>Table des produits</h2>
   <br><br>
   <!-- on affiche un bouton pour ajouter un nouveau produit -->
-  <a href="{% url 'produit_create' fournisseur_pk=fournisseur%}" class="btn btn-primary">Ajouter produit</a>
+  <a href="{% url 'produit_create' fournisseur_pk=object.id%}" class="btn btn-primary">Ajouter produit</a>
   <br><br>
   <div class="col-lg-6">
   <!-- on affiche les produits -->
-	{% render_table produits %}
+	{% render_table table %}
   </div>
   </body>
 </html>
