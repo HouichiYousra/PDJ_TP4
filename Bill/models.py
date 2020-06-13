@@ -1,6 +1,5 @@
 from django.db import models
 from django import utils
-from django.shortcuts import get_list_or_404
 
 from django.urls import reverse
 
@@ -29,7 +28,7 @@ class Fournisseur(models.Model):
 class Produit(models.Model):
     designation = models.CharField(max_length=50)
     prix = models.FloatField(default=0)
-    fournisseur = models.ForeignKey(Fournisseur, on_delete=models.CASCADE, default=None, blank=True, null=True)
+    fournisseur = models.ForeignKey(Fournisseur, on_delete=models.CASCADE, default=None, blank=True, null=True,related_name='produits')
 
     def __str__(self):
         return self.designation
@@ -58,7 +57,7 @@ class Facture(models.Model):
 
 
 class LigneFacture(models.Model):
-    produit = models.ForeignKey(Produit, on_delete=models.CASCADE)
+    produit = models.ForeignKey(Produit, on_delete=models.CASCADE,related_name='lignes')
     qte = models.IntegerField(default=1)
     prix=models.IntegerField(default=0,editable=False)
     facture = models.ForeignKey(Facture, on_delete=models.CASCADE, related_name='lignes')

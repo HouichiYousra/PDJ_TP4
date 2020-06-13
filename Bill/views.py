@@ -1,16 +1,16 @@
 from bootstrap_datepicker_plus import DatePickerInput
-from django.db.models import Sum, F
+from django.db.models import Sum, F, ExpressionWrapper, fields, Count
 from django.shortcuts import render, get_object_or_404
-from django_tables2 import SingleTableView
+from django.views.generic import TemplateView
+from django_tables2 import SingleTableView, MultiTableMixin
 
-from Bill.models import Facture, LigneFacture, Client, Fournisseur, Produit
 from django.views.generic.edit import UpdateView, CreateView, DeleteView
 from django.views.generic.detail import DetailView
 from django_tables2.config import RequestConfig
 from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Button
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse_lazy
 
 
 # Create your views here.
@@ -100,8 +100,6 @@ class LigneFactureDeleteView(DeleteView):
     
     def get_success_url(self):
         self.success_url = reverse('facture_table_detail', kwargs={'pk':self.kwargs.get('facture_pk')})
-
-
 
 class ClientListView(SingleTableView):
     template_name = 'bill/clients_table.html'
@@ -264,3 +262,16 @@ class ProduitDeleteView(DeleteView):
     template_name = 'bill/Produit_delete.html'
     def get_success_url(self):
         self.success_url = reverse('fournisseur_produits_table', kwargs={'pk':self.kwargs.get('fournisseur_pk')})
+
+
+class DashboardTablesView(MultiTableMixin, TemplateView):
+    template_name = "bill/dashboard.html"
+    tables = [
+        ClientChiffresTable(Client.objects.all().annotate(chiffre=Sum(F('factures__prix'))).order_by('-chiffre')),
+        FournisseurChiffresTable(Fournisseur.objects.all().annotate(
+            chiffre=Sum(ExpressionWrapper(F('produits__prix')*F('produits__lignes__qte'),output_field=fields.FloatField()))).order_by('-chiffre'))
+    ]
+
+    table_pagination = {
+        "per_page": 5
+    }

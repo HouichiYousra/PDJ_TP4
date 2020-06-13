@@ -32,4 +32,6 @@ urlpatterns = [
     re_path(r'^fournisseur/(?P<fournisseur_pk>\d+)/produit_create/', views.ProduitCreateView.as_view(), name='produit_create'),
     re_path(r'^produit_update/(?P<pk>\d+)/(?P<fournisseur_pk>\d+)/$', views.ProduitUpdateView.as_view(), name='produit_update'),
     re_path(r'^produit_delete/(?P<pk>\d+)/(?P<fournisseur_pk>\d+)/$', views.ProduitDeleteView.as_view(), name='produit_delete'),
+    re_path(r'^dashboard/', views.DashboardTablesView.as_view(),name='dashboard'),
+
 ]

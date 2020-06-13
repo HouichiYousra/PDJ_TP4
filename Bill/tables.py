@@ -52,3 +52,15 @@ class FournisseurProduitsListTable(tables.Table):
     class Meta:
         model = Produit
         template_name = "django_tables2/bootstrap4.html"
+
+class ClientChiffresTable(tables.Table):
+    class Meta:
+        template_name = "django_tables2/bootstrap4.html"
+        model=Client
+        fields=('nom','prenom','adresse','tel','sexe','chiffre')
+
+class FournisseurChiffresTable(tables.Table):
+    class Meta:
+        template_name = "django_tables2/bootstrap4.html"
+        model=Fournisseur
+        fields=('nom','chiffre')
