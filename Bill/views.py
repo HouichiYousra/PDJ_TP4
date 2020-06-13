@@ -1,12 +1,11 @@
 from bootstrap_datepicker_plus import DatePickerInput
+from django.db.models import Sum, F
 from django.shortcuts import render, get_object_or_404
-from django.views.generic import ListView
 from django_tables2 import SingleTableView
 
 from Bill.models import Facture, LigneFacture, Client, Fournisseur, Produit
 from django.views.generic.edit import UpdateView, CreateView, DeleteView
 from django.views.generic.detail import DetailView
-import django_tables2 as tables
 from django_tables2.config import RequestConfig
 from django import forms
 from crispy_forms.helper import FormHelper
@@ -15,6 +14,9 @@ from django.urls import reverse, reverse_lazy
 
 
 # Create your views here.
+from Bill.tables import *
+
+
 def facture_detail_view(request, pk):
     facture = get_object_or_404(Facture, id=pk)
     total = facture.calculPrixTotal()
@@ -43,15 +45,6 @@ class FactureUpdate(UpdateView):
         form.helper.add_input(Button('cancel', 'Annuler', css_class='btn-secondary', onclick="window.history.back()"))
         self.success_url = reverse('client_factures_table', kwargs={'pk':self.kwargs.get('client_pk')})
         return form
-
-class LigneFactureTable(tables.Table):
-    action= '<a href="{% url "lignefacture_update" pk=record.id facture_pk=record.facture.id %}" class="btn btn-warning">Modifier</a>\
-            <a href="{% url "lignefacture_delete" pk=record.id facture_pk=record.facture.id %}" class="btn btn-danger">Supprimer</a>'
-    edit   = tables.TemplateColumn(action)    
-    class Meta:
-        model = LigneFacture
-        template_name = "django_tables2/bootstrap4.html"
-        fields = ('produit__designation','produit__id', 'produit__prix', 'qte' )
 
 class FactureDetailView(DetailView):
     template_name = 'bill/facture_table_detail.html'
@@ -108,19 +101,19 @@ class LigneFactureDeleteView(DeleteView):
     def get_success_url(self):
         self.success_url = reverse('facture_table_detail', kwargs={'pk':self.kwargs.get('facture_pk')})
 
-class ClientListTable(tables.Table):
-    action= '<a href="{% url "client_update" pk=record.id %}" class="btn btn-warning">Modifier</a>\
-            <a href="{% url "client_delete" pk=record.id  %}" class="btn btn-danger">Supprimer</a>\
-            <a href="{% url "client_factures_table" pk=record.id %}" class="btn btn-primary">Liste de factures</a>'
-    edit   = tables.TemplateColumn(action)
-    class Meta:
-        model = Client
-        template_name = "django_tables2/bootstrap4.html"
+
 
 class ClientListView(SingleTableView):
     template_name = 'bill/clients_table.html'
-    model= Client
-    table_class = ClientListTable
+    model=Client
+
+    def get_context_data(self, **kwargs):
+        context = super(ClientListView, self).get_context_data(**kwargs)
+
+        table = ClientListTable(Client.objects.all().annotate(chiffre=Sum(F('factures__prix'))))
+        RequestConfig(self.request, paginate={"per_page": 2}).configure(table)
+        context['table'] = table
+        return context
 
 class ClientCreateView(CreateView):
     model = Client
@@ -155,14 +148,6 @@ class ClientDeleteView(DeleteView):
     template_name = 'bill/client_delete.html'
     success_url = reverse_lazy('clients_table')
 
-class ClientFacturesListTable(tables.Table):
-    action = '<a href="{% url "facture_update" pk=record.id client_pk=record.client.id %}" class="btn btn-warning">Modifier</a>\
-            <a href="{% url "facture_delete" pk=record.id client_pk=record.client.id %}" class="btn btn-danger">Supprimer</a>'
-    edit = tables.TemplateColumn(action)
-
-    class Meta:
-        model = Facture
-        template_name = "django_tables2/bootstrap4.html"
 
 class ClientFacturesListView(DetailView):
     template_name = 'bill/client_factures_table.html'
@@ -226,28 +211,10 @@ class FournisseurUpdateView(UpdateView):
         self.success_url = reverse('fournisseurs_table')
         return form
 
-class FournisseurListTable(tables.Table):
-    action= '<a href="{% url "fournisseur_update" pk=record.id %}" class="btn btn-warning">Modifier</a>\
-            <a href="{% url "fournisseur_delete" pk=record.id  %}" class="btn btn-danger">Supprimer</a>\
-            <a href="{% url "fournisseur_produits_table" pk=record.id %}" class="btn btn-primary">Liste de factures</a>'
-    edit   = tables.TemplateColumn(action)
-    class Meta:
-        model = Fournisseur
-        template_name = "django_tables2/bootstrap4.html"
-
 class FournisseurListView(SingleTableView):
     template_name = 'bill/fournisseurs_table.html'
     model= Fournisseur
     table_class = FournisseurListTable
-
-class FournisseurProduitsListTable(tables.Table):
-    action = '<a href="{% url "produit_update" pk=record.id fournisseur_pk=record.fournisseur.id %}" class="btn btn-warning">Modifier</a>\
-            <a href="{% url "produit_delete" pk=record.id fournisseur_pk=record.fournisseur.id %}" class="btn btn-danger">Supprimer</a>'
-    edit = tables.TemplateColumn(action)
-
-    class Meta:
-        model = Produit
-        template_name = "django_tables2/bootstrap4.html"
 
 class FournisseurProduitsListView(DetailView):
     template_name = 'bill/fournisseur_produits_table.html'
