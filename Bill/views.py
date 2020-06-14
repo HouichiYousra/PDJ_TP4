@@ -39,7 +39,7 @@ def client_detail_view(request, pk):
 class FactureUpdate(UpdateView):
     model = Facture
     fields = ['client', 'date']
-    template_name = 'bill/update.html'
+    template_name = 'bill/facture_update.html'
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
@@ -86,7 +86,7 @@ class LigneFactureCreateView(CreateView):
 
 class LigneFactureUpdateView(UpdateView):
     model = LigneFacture
-    template_name = 'bill/update.html'
+    template_name = 'bill/facture_update.html'
     fields = ['facture', 'produit', 'qte']
     
     def get_form(self, form_class=None):
@@ -101,7 +101,7 @@ class LigneFactureUpdateView(UpdateView):
 
 class LigneFactureDeleteView(DeleteView):
     model = LigneFacture
-    template_name = 'bill/delete.html'
+    template_name = 'bill/ligne_delete.html'
     
     def get_success_url(self):
         self.success_url = reverse('facture_table_detail', kwargs={'pk':self.kwargs.get('facture_pk')})

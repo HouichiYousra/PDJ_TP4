@@ -1,5 +1,6 @@
 from django.db.models import Sum, F, ExpressionWrapper, fields, Count
 from jchart import Chart
+from jchart.config import Axes
 
 from Bill.models import Fournisseur, Categorie
 
@@ -21,12 +22,17 @@ class RadarChart(Chart):
     chart_type = 'radar'
 
     def get_datasets(self, **kwargs):
-        categories=Categorie.objects.values('nom').annotate(chiffre_affaire=Sum(ExpressionWrapper(F('produits__prix')*F('produits__lignes__qte'),output_field=fields.FloatField())))
+        categories=Categorie.objects.values('nom').annotate(chiffre_affaire=Sum(ExpressionWrapper(F('produits__prix')
+                                                      *F('produits__lignes__qte'),output_field=fields.FloatField())))
         print(categories[0]['nom'])
         return [{
-            'label': [categorie['nom'] for categorie in categories],
-            'data':  [categorie['chiffre_affaire'] for categorie in categories]
-
+            'label': "chiffre d'affaire par catégorie",
+            'data': {
+                'label': [categorie['nom'] for categorie in categories],
+                'datasets': [{
+                    'data': [categorie['chiffre_affaire'] for categorie in categories],
+            } ]
+        }
         }]
 
 
