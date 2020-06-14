@@ -4,6 +4,8 @@ from django import utils
 from django.urls import reverse
 
 # Create your models here.
+class Categorie(models.Model):
+    nom=models.CharField(max_length=50)
 
 class Client(models.Model):
     SEXE = (
@@ -29,6 +31,8 @@ class Produit(models.Model):
     designation = models.CharField(max_length=50)
     prix = models.FloatField(default=0)
     fournisseur = models.ForeignKey(Fournisseur, on_delete=models.CASCADE, default=None, blank=True, null=True,related_name='produits')
+    categorie = models.ForeignKey(Categorie, on_delete=models.CASCADE, default=None, blank=True, null=True,
+                                    related_name='produits')
 
     def __str__(self):
         return self.designation

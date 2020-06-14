@@ -14,6 +14,7 @@ from django.urls import reverse_lazy
 
 
 # Create your views here.
+from Bill.chart import LineChart
 from Bill.tables import *
 
 
@@ -265,7 +266,9 @@ class ProduitDeleteView(DeleteView):
 
 
 class DashboardTablesView(MultiTableMixin, TemplateView):
+
     template_name = "bill/dashboard.html"
+
     tables = [
         ClientChiffresTable(Client.objects.all().annotate(chiffre=Sum(F('factures__prix'))).order_by('-chiffre')),
         FournisseurChiffresTable(Fournisseur.objects.all().annotate(
@@ -275,3 +278,4 @@ class DashboardTablesView(MultiTableMixin, TemplateView):
     table_pagination = {
         "per_page": 5
     }
+
