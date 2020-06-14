@@ -7,7 +7,7 @@ urlpatterns = [
     re_path(r'^facture_table_create/(?P<facture_pk>\d+)/$', views.LigneFactureCreateView.as_view(), name='facture_table_create'),
     re_path(r'^lignefacture_delete/(?P<pk>\d+)/(?P<facture_pk>\d+)/$', views.LigneFactureDeleteView.as_view(), name='lignefacture_delete'),
     re_path(r'^lignefacture_update/(?P<pk>\d+)/(?P<facture_pk>\d+)/$', views.LigneFactureUpdateView.as_view(), name='lignefacture_update'),
-    re_path(r'^facture_update/(?P<pk>\d+)/(?P<client_pk>\d+)/$', views.FactureUpdate.as_view(), name='facture_update'),
+    re_path(r'^facture_update/(?P<pk>\d+)/(?P<client_pk>\d+)/$', views.FactureDetailView.as_view(), name='facture_update'),
     re_path(r'^facture_delete/(?P<pk>\d+)/(?P<client_pk>\d+)/$', views.FactureDelete.as_view(), name='facture_delete'),
 
     re_path(r'^client_detail/(?P<pk>\d+)/$', views.client_detail_view, name='client_detail'),
