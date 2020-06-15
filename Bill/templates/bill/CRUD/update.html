@@ -3,11 +3,11 @@
 	{% bootstrap_css %}         {# Embed Bootstrap CSS #}
 	{% bootstrap_javascript jquery='full' %}  {# Embed Bootstrap JS+jQuery #}
 
-{% block content %}
-  <h2>Ajouter un fournisseur</h2>
-  <div class="col-lg-4">
-  <!-- on affiche le formulaire avec crispy -->
+ {% block content %}
+     <div class="align-content-center">
+  <h2>Modification du {{ type }} N° {{ object.id }}</h2>
+  <div class="col-lg-5">
 	{% crispy form %}
   </div>
-
+</div>
 {% endblock %}

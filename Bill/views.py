@@ -39,7 +39,7 @@ def client_detail_view(request, pk):
 class FactureUpdate(UpdateView):
     model = Facture
     fields = ['client', 'date']
-    template_name = 'bill/facture_update.html'
+    template_name = 'bill/CRUD/update.html'
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
@@ -65,13 +65,13 @@ class FactureDetailView(DetailView):
 
 class FactureDelete(DeleteView):
     model = Facture
-    template_name = 'bill/facture_delete.html'
+    template_name = 'bill/CRUD/delete.html'
     def get_success_url(self):
         self.success_url = reverse('client_factures_table', kwargs={'pk':self.kwargs.get('client_pk')})
-
+        return self.success_url
 class LigneFactureCreateView(CreateView):
     model = LigneFacture
-    template_name = 'bill/ligne_create.html'
+    template_name = 'bill/CRUD/create.html'
     fields = ['facture', 'produit', 'qte']
     
     def get_form(self, form_class=None):
@@ -86,7 +86,7 @@ class LigneFactureCreateView(CreateView):
 
 class LigneFactureUpdateView(UpdateView):
     model = LigneFacture
-    template_name = 'bill/facture_update.html'
+    template_name = 'bill/CRUD/update.html'
     fields = ['facture', 'produit', 'qte']
     
     def get_form(self, form_class=None):
@@ -101,10 +101,11 @@ class LigneFactureUpdateView(UpdateView):
 
 class LigneFactureDeleteView(DeleteView):
     model = LigneFacture
-    template_name = 'bill/ligne_delete.html'
+    template_name = 'bill/CRUD/delete.html'
     
     def get_success_url(self):
         self.success_url = reverse('facture_table_detail', kwargs={'pk':self.kwargs.get('facture_pk')})
+        return self.success_url
 
 class ClientListView(SingleTableView):
     template_name = 'bill/clients_table.html'
@@ -120,7 +121,7 @@ class ClientListView(SingleTableView):
 
 class ClientCreateView(CreateView):
     model = Client
-    template_name = 'bill/client_create.html'
+    template_name = 'bill/CRUD/create.html'
     fields = ['nom', 'prenom', 'adresse','tel','sexe']
 
     def get_form(self, form_class=None):
@@ -134,7 +135,7 @@ class ClientCreateView(CreateView):
 
 class ClientUpdateView(UpdateView):
     model = Client
-    template_name = 'bill/client_update.html'
+    template_name = 'bill/CRUD/update.html'
     fields = '__all__'
 
     def get_form(self, form_class=None):
@@ -148,7 +149,7 @@ class ClientUpdateView(UpdateView):
 
 class ClientDeleteView(DeleteView):
     model = Client
-    template_name = 'bill/client_delete.html'
+    template_name = 'bill/CRUD/delete.html'
     success_url = reverse_lazy('clients_table')
 
 
@@ -191,7 +192,7 @@ class Formset(LayoutObject):
 
 class FactureCreateView(CreateView):
     model = Facture
-    template_name = 'bill/facture_create.html'
+    template_name = 'bill/CRUD/create.html'
     fields = '__all__'
 
     def get_form(self, form_class=None):
@@ -235,7 +236,7 @@ class FactureCreateView(CreateView):
 
 class FournisseurCreateView(CreateView):
     model = Fournisseur
-    template_name = 'bill/fournisseur_create.html'
+    template_name = 'bill/CRUD/create.html'
     fields = '__all__'
 
     def get_form(self, form_class=None):
@@ -249,13 +250,13 @@ class FournisseurCreateView(CreateView):
 
 class FournisseurDeleteView(DeleteView):
     model = Fournisseur
-    template_name = 'bill/fournisseur_delete.html'
+    template_name = 'bill/CRUD/delete.html'
     success_url = reverse_lazy('fournisseurs_table')
 
 class FournisseurUpdateView(UpdateView):
     model = Fournisseur
     fields = '__all__'
-    template_name = 'bill/fournisseur_update.html'
+    template_name = 'bill/CRUD/update.html'
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
@@ -286,7 +287,7 @@ class FournisseurProduitsListView(DetailView):
 
 class ProduitCreateView(CreateView):
     model = Produit
-    template_name = 'bill/produit_create.html'
+    template_name = 'bill/CRUD/create.html'
     fields = '__all__'
 
     def get_form(self, form_class=None):
@@ -302,7 +303,7 @@ class ProduitCreateView(CreateView):
 
 class ProduitUpdateView(UpdateView):
     model = Produit
-    template_name = 'bill/produit_update.html'
+    template_name = 'bill/CRUD/update.html'
     fields = '__all__'
 
     def get_form(self, form_class=None):
@@ -316,10 +317,10 @@ class ProduitUpdateView(UpdateView):
 
 class ProduitDeleteView(DeleteView):
     model = Produit
-    template_name = 'bill/Produit_delete.html'
+    template_name = 'bill/CRUD/delete.html'
     def get_success_url(self):
         self.success_url = reverse('fournisseur_produits_table', kwargs={'pk':self.kwargs.get('fournisseur_pk')})
-
+        return self.success_url
 
 class DashboardTablesView(MultiTableMixin, TemplateView):
 
