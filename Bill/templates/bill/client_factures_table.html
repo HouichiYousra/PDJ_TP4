@@ -1,12 +1,8 @@
-<!DOCTYPE HTML>
-<html>
-  <head>
-    <meta charset="utf-8">
+<{% extends 'bill/base.html' %}
     {% load bootstrap4 django_tables2 %}
 	{% bootstrap_css %}         {# Embed Bootstrap CSS #}
 	{% bootstrap_javascript jquery='full' %}  {# Embed Bootstrap JS+jQuery #}
-  </head>
-  <body>
+ {% block content %}
   <h2>Table des factures</h2>
   <br><br>
   <!-- on affiche un bouton pour ajouter un nouveau client -->
@@ -16,5 +12,4 @@
   <!-- on affiche les clients -->
 	{% render_table table %}
   </div>
-  </body>
-</html>
+ {% endblock %}

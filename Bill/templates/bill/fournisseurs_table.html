@@ -1,20 +1,21 @@
-<!DOCTYPE HTML>
-<html>
-  <head>
-    <meta charset="utf-8">
+{% extends 'bill/base.html' %}
     {% load bootstrap4 django_tables2 %}
 	{% bootstrap_css %}         {# Embed Bootstrap CSS #}
 	{% bootstrap_javascript jquery='full' %}  {# Embed Bootstrap JS+jQuery #}
-  </head>
-  <body>
+
+{% block content %}
+     <div class="row">
+
+    <div class="col-10">
   <h2>Table des fournisseurs</h2>
-  <br><br>
-  <!-- on affiche un bouton pour ajouter un nouveau fournisseur -->
-  <a href="{% url 'fournisseur_create' %}" class="btn btn-primary">Ajouter fourisseur</a>
-  <br><br>
-  <div class="col-lg-6">
+
+
   <!-- on affiche les fournisseurs -->
 	{% render_table table %}
   </div>
-  </body>
-</html>
+         <div class="col-2">
+             <!-- on affiche un bouton pour ajouter un nouveau fournisseur -->
+  <a href="{% url 'fournisseur_create' %}" class="btn btn-primary">Ajouter fourisseur</a>
+         </div>
+     </div>
+ {% endblock %}
