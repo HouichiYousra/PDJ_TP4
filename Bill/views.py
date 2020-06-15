@@ -59,7 +59,7 @@ class FactureDetailView(DetailView):
         context = super(FactureDetailView, self).get_context_data(**kwargs)
         
         table = LigneFactureTable(LigneFacture.objects.filter(facture=self.kwargs.get('pk')))
-        RequestConfig(self.request, paginate={"per_page": 2}).configure(table)
+        RequestConfig(self.request, paginate={"per_page": 5}).configure(table)
         context['table'] = table
         return context
 
@@ -160,7 +160,7 @@ class ClientFacturesListView(DetailView):
         context = super(ClientFacturesListView, self).get_context_data(**kwargs)
 
         table = ClientFacturesListTable(Facture.objects.filter(client=self.kwargs.get('pk')))
-        RequestConfig(self.request, paginate={"per_page": 2}).configure(table)
+        RequestConfig(self.request, paginate={"per_page": 5}).configure(table)
         context['table'] = table
         return context
 
@@ -279,7 +279,7 @@ class FournisseurProduitsListView(DetailView):
         context = super(FournisseurProduitsListView, self).get_context_data(**kwargs)
 
         table = FournisseurProduitsListTable(Produit.objects.filter(fournisseur=self.kwargs.get('pk')))
-        RequestConfig(self.request, paginate={"per_page": 2}).configure(table)
+        RequestConfig(self.request, paginate={"per_page": 5}).configure(table)
         context['table'] = table
         return context
 
