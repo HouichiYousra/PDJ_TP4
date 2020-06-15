@@ -71,7 +71,7 @@ class FactureDelete(DeleteView):
 
 class LigneFactureCreateView(CreateView):
     model = LigneFacture
-    template_name = 'bill/create.html'
+    template_name = 'bill/ligne_create.html'
     fields = ['facture', 'produit', 'qte']
     
     def get_form(self, form_class=None):
@@ -330,8 +330,8 @@ class DashboardTablesView(MultiTableMixin, TemplateView):
         FournisseurChiffresTable(Fournisseur.objects.all().annotate(
             chiffre=Sum(ExpressionWrapper(F('produits__prix')*F('produits__lignes__qte'),output_field=fields.FloatField()))).order_by('-chiffre'))
     ]
-
+    print(tables)
     table_pagination = {
-        "per_page": 5
+        "per_page": 4
     }
 

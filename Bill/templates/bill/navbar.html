@@ -1,0 +1,52 @@
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+  <!-- Brand -->
+  <a class="navbar-brand" href="#">TP DJANGO - INTERMEDIAIRE</a>
+
+  <!-- Links -->
+  <ul class="navbar-nav">
+
+
+    <!-- Dropdown -->
+    <li class="nav-item dropdown">
+      <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">
+        CLIENT
+      </a>
+      <div class="dropdown-menu">
+        <a class="dropdown-item" href="{% url 'clients_table' %}">Afficher</a>
+        <a class="dropdown-item" href="{% url 'client_create' %}">Creer</a>
+      </div>
+    </li>
+       <li class="nav-item dropdown">
+      <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">
+        FACTURE
+      </a>
+      <div class="dropdown-menu">
+        <a class="dropdown-item" href="#">Afficher</a>
+        <a class="dropdown-item" href="#">Creer</a>
+      </div>
+    </li>
+      </li>
+       <li class="nav-item dropdown">
+      <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">
+        FOURNISSEUR
+      </a>
+      <div class="dropdown-menu">
+        <a class="dropdown-item" href="{% url 'fournisseurs_table' %}">Afficher</a>
+        <a class="dropdown-item" href="{% url 'fournisseur_create' %}">Creer</a>
+      </div>
+    </li>
+      </li>
+       <li class="nav-item dropdown">
+      <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">
+        PRODUIT
+      </a>
+      <div class="dropdown-menu">
+        <a class="dropdown-item" href="#">Afficher</a>
+        <a class="dropdown-item" href="#">Creer</a>
+
+      </div>
+    </li>
+  </ul>
+</nav>
+
+<br/>

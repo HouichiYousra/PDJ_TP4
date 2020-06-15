@@ -1,38 +1,44 @@
 from django.db.models import Sum, F, ExpressionWrapper, fields, Count
 from jchart import Chart
-from jchart.config import Axes
+from jchart.config import Axes, DataSet
 
-from Bill.models import Fournisseur, Categorie
+from Bill.models import Facture, Categorie
 
 
 class LineChart(Chart):
     chart_type = 'line'
+    factures = Facture.objects.values('date').annotate(
+        chiffre_affaire=Sum(
+            ExpressionWrapper(F('lignes__produit__prix') * F('lignes__qte'), output_field=fields.FloatField())))
 
     def get_datasets(self, **kwargs):
-        fournisseurs=Fournisseur.objects.all().annotate(
-            chiffre=Sum(ExpressionWrapper(F('produits__prix')*F('produits__lignes__qte'),output_field=fields.FloatField())))
+        return [DataSet(
+            color=(178, 26, 44),
+            data=list(self.factures.values_list('chiffre_affaire', flat=True)),
+            label="L'evolution du chiffre d'affaire"
+        )
 
-        return [{
-            'label': "Evolution du chiffre d'affaire par fournisseur",
-            'data': [{'x': fournisseur.nom, 'y': fournisseur.chiffre} for fournisseur in fournisseurs]
-        }]
+        ]
 
+    def get_labels(self, *args, **kwargs):
+        return list(self.factures.values_list('date', flat=True))
 
 class RadarChart(Chart):
     chart_type = 'radar'
+    categories = Categorie.objects.values('nom').annotate(chiffre_affaire=Sum(ExpressionWrapper(F('produits__prix')
+                                                                                                * F(
+        'produits__lignes__qte'), output_field=fields.FloatField())))
 
     def get_datasets(self, **kwargs):
-        categories=Categorie.objects.values('nom').annotate(chiffre_affaire=Sum(ExpressionWrapper(F('produits__prix')
-                                                      *F('produits__lignes__qte'),output_field=fields.FloatField())))
-        print(categories[0]['nom'])
-        return [{
-            'label': "chiffre d'affaire par catégorie",
-            'data': {
-                'label': [categorie['nom'] for categorie in categories],
-                'datasets': [{
-                    'data': [categorie['chiffre_affaire'] for categorie in categories],
-            } ]
-        }
-        }]
 
+        return [DataSet(
+            color=(26,178,44),
+            data=list(self.categories.values_list('chiffre_affaire', flat=True)),
+            label="Chiffre d'affaire par categorie"
+        )
+
+        ]
+
+    def get_labels(self, *args, **kwargs):
+        return list(self.categories.values_list('nom', flat=True))
 
