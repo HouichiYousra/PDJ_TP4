@@ -1,7 +1,9 @@
+from django.conf.urls import url
 from django.contrib import admin
-from django.urls import re_path, path
+from django.urls import re_path, path, include
 from Bill import views
 from Bill.chart import LineChart, RadarChart
+from Bill.views import SignUpView, ClientSignUpView, HomeView, FournisseurSignUpView
 
 urlpatterns = [
     re_path(r'^facture_detail/(?P<pk>\d+)/$', views.facture_detail_view, name='facture_detail'),
@@ -12,7 +14,6 @@ urlpatterns = [
     re_path(r'^facture_update/(?P<pk>\d+)/(?P<client_pk>\d+)/$', views.FactureDetailView.as_view(extra_context={'type':'facture'}), name='facture_update'),
     re_path(r'^facture_delete/(?P<pk>\d+)/(?P<client_pk>\d+)/$', views.FactureDelete.as_view(extra_context={'type':'facture'}), name='facture_delete'),
 
-    re_path(r'^client_detail/(?P<pk>\d+)/$', views.client_detail_view, name='client_detail'),
     re_path(r'^clients_table/', views.ClientListView.as_view(extra_context={'type':'client'}), name='clients_table'),
     re_path(r'^client_create/', views.ClientCreateView.as_view(extra_context={'type':'client'}), name='client_create'),
     re_path(r'^client_delete/(?P<pk>\d+)/$', views.ClientDeleteView.as_view(extra_context={'type':'client'}),
@@ -36,4 +37,11 @@ urlpatterns = [
     re_path(r'^produit_delete/(?P<pk>\d+)/(?P<fournisseur_pk>\d+)/$', views.ProduitDeleteView.as_view(extra_context={'type':'produit'}), name='produit_delete'),
     re_path(r'^dashboard/', views.DashboardTablesView.as_view(extra_context={'line_chart': LineChart(), 'radar_chart': RadarChart()}),name='dashboard'),
 
+    path('home/',HomeView.as_view(),name='home'),
+
+    path('accounts/', include('django.contrib.auth.urls')),
+    path('accounts/signup/', SignUpView.as_view(), name='signup'),
+    path('accounts/signup/client/', ClientSignUpView.as_view(), name='client_signup'),
+    path('accounts/signup/fournisseur/', FournisseurSignUpView.as_view(), name='fournisseur_signup'),
+    url(r'^oauth/', include('social_django.urls', namespace='social')),
 ]

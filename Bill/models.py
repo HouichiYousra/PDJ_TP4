@@ -1,3 +1,4 @@
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django import utils
 
@@ -7,30 +8,29 @@ from django.urls import reverse
 class Categorie(models.Model):
     nom=models.CharField(max_length=50)
 
-class Client(models.Model):
+class Utilisateur(AbstractUser):
+    USER_TYPE_CHOICES = (
+        (1, 'client'),
+        (2, 'fournisseur'),
+    )
     SEXE = (
         ('M', 'Masculin'),
         ('F', 'Feminin')
     )
-    nom = models.CharField(max_length=50, null=True, blank=True)
-    prenom = models.CharField(max_length=50, null=True, blank=True)
+
+    user_type = models.PositiveSmallIntegerField(choices=USER_TYPE_CHOICES,null=True,blank=True)
     adresse = models.TextField(null=True, blank=True)
-    tel = models.CharField(max_length = 10, null=True, blank=True)
-    sexe = models.CharField(max_length=1, choices = SEXE)
+    tel = models.CharField(max_length=10, null=True, blank=True)
+    sexe = models.CharField(max_length=1, choices=SEXE)
 
     def __str__(self):
-        return self.nom + ' ' + self.prenom
-
-class Fournisseur(models.Model):
-    nom = models.CharField(max_length=50)
-
-    def __str__(self):
-        return self.nom
+        return self.username
 
 class Produit(models.Model):
     designation = models.CharField(max_length=50)
     prix = models.FloatField(default=0)
-    fournisseur = models.ForeignKey(Fournisseur, on_delete=models.CASCADE, default=None, blank=True, null=True,related_name='produits')
+    image=models.ImageField(upload_to='produits/',null=True,blank=True)
+    fournisseur = models.ForeignKey(Utilisateur, on_delete=models.CASCADE, default=None, blank=True, null=True,related_name='produits')
     categorie = models.ForeignKey(Categorie, on_delete=models.CASCADE, default=None, blank=True, null=True,
                                     related_name='produits')
 
@@ -39,7 +39,7 @@ class Produit(models.Model):
     
     
 class Facture(models.Model):
-    client = models.ForeignKey(Client, on_delete=models.CASCADE,related_name='factures')
+    client = models.ForeignKey(Utilisateur, on_delete=models.CASCADE,related_name='factures')
     date = models.DateField(default=utils.timezone.now)
     prix = models.IntegerField(default=0,editable=False)
     def get_absolute_url(self):
@@ -78,3 +78,15 @@ class LigneFacture(models.Model):
         super(LigneFacture, self).save(*args, **kwargs)
         self.facture.calculPrixTotal()
         self.facture.save()
+
+
+class Commande(models.Model):
+    client = models.ForeignKey(Utilisateur, on_delete=models.CASCADE, related_name='commandes')
+    date = models.DateField(default=utils.timezone.now)
+    valide=models.BooleanField(default=False)
+
+
+class LigneCommande(models.Model):
+    produit = models.ForeignKey(Produit, on_delete=models.CASCADE,related_name='lignes_com')
+    qte = models.IntegerField(default=1)
+    commande = models.ForeignKey(Commande, on_delete=models.CASCADE, related_name='lignes_com')

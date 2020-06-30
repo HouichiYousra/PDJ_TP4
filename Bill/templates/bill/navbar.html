@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
   <!-- Brand -->
-  <a class="navbar-brand" href="#">TP DJANGO - INTERMEDIAIRE</a>
+  <a class="navbar-brand" href={% url 'home' %}>TP DJANGO</a>
 
   <!-- Links -->
   <ul class="navbar-nav">
@@ -16,8 +16,6 @@
         <a class="dropdown-item" href="{% url 'client_create' %}">Creer</a>
       </div>
     </li>
-
-      </li>
        <li class="nav-item dropdown">
       <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">
         FOURNISSEUR
@@ -27,8 +25,23 @@
         <a class="dropdown-item" href="{% url 'fournisseur_create' %}">Creer</a>
       </div>
     </li>
-      </li>
+      <li class="nav-item dropdown">
+      <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">
+        Connexion
+      </a>
+      <div class="dropdown-menu">
+        <a class="dropdown-item" href="{% url 'login' %}">Login</a>
+        <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
+      </div>
+    </li>
+{% if user.is_authenticated %}
+            <ul class="navbar-nav mr-right">
+                <li class="nav-item">
+                    <a class="nav-link">Logged in as {{ user.username }}</a>
+                </li>
+            </ul>
 
+        {% endif %}
   </ul>
 </nav>
 
