@@ -7,15 +7,10 @@
      <div class="row">
 
     <div class="col-10">
-  <h2>Table des fournisseurs</h2>
+  <h2>Table des produits</h2>
 
 
-  <!-- on affiche les fournisseurs -->
+
 	{% render_table table %}
-  </div>
-         <div class="col-2">
-             <!-- on affiche un bouton pour ajouter un nouveau fournisseur -->
-  <a href="{% url 'fournisseur_create' %}" class="btn btn-primary">Ajouter fourisseur</a>
-         </div>
-     </div>
+
  {% endblock %}

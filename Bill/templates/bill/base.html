@@ -9,7 +9,8 @@
     {% load bootstrap4 django_tables2 %}
 	{% bootstrap_css %}         {# Embed Bootstrap CSS #}
 	{% bootstrap_javascript jquery='full' %}  {# Embed Bootstrap JS+jQuery #}
-     <link rel="stylesheet" href="{% static 'css/custom.css' %}"/>
+     <link rel="stylesheet" href="{% static 'css/static/custom.css' %}"/>
+
 
   </head>
 
@@ -17,11 +18,31 @@
 {% include 'bill/navbar.html' %}
 
 <div class="container-fluid">
+<div class="row">
+{% if user.is_authenticated %}
+<div class="col-2>
+
+
+    {% include 'bill/sidebar.html' %}
+
+</div>
+<div class="col-10">
+    {% else %}
+    <div class="col-12">
+{% endif %}
     {% block content %}
 
 {% endblock %}
 </div>
 
+</div>
+
+</div>
+
+{% include 'bill/footer.html' %}
+
+
 
 </body>
+ <script src="https://use.fontawesome.com/4db4ac811a.js"></script>
 </html>

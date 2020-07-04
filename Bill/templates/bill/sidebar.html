@@ -1,0 +1,68 @@
+<nav id="sidebarMenu" class="d-md-block bg-light sidebar collapse" style="background-color: #ecf0f1">
+      <div class="sidebar-sticky pt-3">
+        <ul class="nav flex-column">
+        {% if user.is_superuser %}
+          <li class="nav-item">
+            <a class="nav-link active" href="{% url 'dashboard' %}">
+              <span data-feather="home"></span>
+              Dashboard
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'fournisseurs_table' %}">
+              <span data-feather="file"></span>
+              Fournisseur
+            </a>
+          </li>
+        {% endif %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'produits_table' %}">
+              <span data-feather="shopping-cart"></span>
+              Produits
+            </a>
+          </li>
+        {% if user.is_staff %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'factures_table' %}">
+              <span data-feather="users"></span>
+              Factures
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'clients_table' %}">
+              <span data-feather="bar-chart-2"></span>
+              Clients
+            </a>
+          </li>
+        {% endif %}
+            {% if user.is_client %}
+          <li class="nav-item">
+            <a class="nav-link" href="#">
+              <span data-feather="layers"></span>
+              Mon Panier
+            </a>
+          </li>
+            {% endif %}
+        </ul>
+
+          <hr/>
+        <ul class="nav flex-column mb-2">
+          <li class="nav-item">
+            <a class="nav-link" href="#">
+              <span data-feather="file-text"></span>
+              Mon compte
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'logout' %}">
+              <span data-feather="file-text"></span>
+             Deconnexion
+            </a>
+          </li>
+
+
+        </ul>
+      </div>
+    </nav>

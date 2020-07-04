@@ -1,9 +1,10 @@
 from bootstrap_datepicker_plus import DatePickerInput
 from crispy_forms.utils import TEMPLATE_PACK
+from django.contrib.auth import login
 from django.db import transaction
 from django.db.models import Sum, F, ExpressionWrapper, fields, Count
 from django.forms import formset_factory, ModelForm, inlineformset_factory
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.views.generic import TemplateView
 from django_tables2 import SingleTableView, MultiTableMixin
@@ -19,6 +20,7 @@ from django.urls import reverse_lazy
 
 # Create your views here.
 from Bill.chart import LineChart
+from Bill.forms import ClientSignUpForm, FournisseurSignUpForm
 from Bill.tables import *
 
 
@@ -30,12 +32,6 @@ def facture_detail_view(request, pk):
     context['prix'] = total
     return render(request, 'bill/facture_detail.html', context)
 
-def client_detail_view(request, pk):
-    client = get_object_or_404(Client, id=pk)
-    context={}
-    context['client'] = client
-    return render(request, 'bill/client_detail.html', context)
-
 class FactureUpdate(UpdateView):
     model = Facture
     fields = ['client', 'date']
@@ -45,7 +41,7 @@ class FactureUpdate(UpdateView):
         form = super().get_form(form_class)
         form.helper = FormHelper()
 
-        form.fields['client']=forms.ModelChoiceField(queryset=Client.objects.filter(id=self.kwargs.get('client_pk')), initial=0)
+        form.fields['client']=forms.ModelChoiceField(queryset=Utilisateur.objects.filter(id=self.kwargs.get('client_pk')), initial=0)
         form.helper.add_input(Submit('submit','Modifier', css_class='btn-primary'))
         form.helper.add_input(Button('cancel', 'Annuler', css_class='btn-secondary', onclick="window.history.back()"))
         self.success_url = reverse('client_factures_table', kwargs={'pk':self.kwargs.get('client_pk')})
@@ -108,21 +104,21 @@ class LigneFactureDeleteView(DeleteView):
         return self.success_url
 
 class ClientListView(SingleTableView):
-    template_name = 'bill/clients_table.html'
-    model=Client
+    template_name = 'bill/CRUD/list.html'
+    model=Utilisateur
 
     def get_context_data(self, **kwargs):
         context = super(ClientListView, self).get_context_data(**kwargs)
 
-        table = ClientListTable(Client.objects.all().annotate(chiffre=Sum(F('factures__prix'))))
+        table = ClientListTable(Utilisateur.objects.filter(user_type=1).annotate(chiffre=Sum(F('factures__prix'))))
         RequestConfig(self.request, paginate={"per_page": 2}).configure(table)
         context['table'] = table
         return context
 
 class ClientCreateView(CreateView):
-    model = Client
+    model = Utilisateur
     template_name = 'bill/CRUD/create.html'
-    fields = ['nom', 'prenom', 'adresse','tel','sexe']
+    fields = ['first_name', 'last_name', 'adresse','tel','sexe']
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
@@ -134,9 +130,9 @@ class ClientCreateView(CreateView):
         return form
 
 class ClientUpdateView(UpdateView):
-    model = Client
+    model = Utilisateur
     template_name = 'bill/CRUD/update.html'
-    fields = '__all__'
+    fields = ('first_name', 'last_name', 'adresse', 'tel', 'sexe')
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
@@ -148,14 +144,14 @@ class ClientUpdateView(UpdateView):
         return form
 
 class ClientDeleteView(DeleteView):
-    model = Client
+    model = Utilisateur
     template_name = 'bill/CRUD/delete.html'
     success_url = reverse_lazy('clients_table')
 
 
 class ClientFacturesListView(DetailView):
     template_name = 'bill/client_factures_table.html'
-    model = Client
+    model = Utilisateur
 
     def get_context_data(self, **kwargs):
         context = super(ClientFacturesListView, self).get_context_data(**kwargs)
@@ -200,7 +196,7 @@ class FactureCreateView(CreateView):
         form.helper = FormHelper()
 
         form.fields['client'] = forms.ModelChoiceField(
-            queryset=Client.objects.filter(id=self.kwargs.get('client_pk')), initial=0)
+            queryset=Utilisateur.objects.filter(id=self.kwargs.get('client_pk')), initial=0)
         form.fields['date'] = forms.DateField(widget=DatePickerInput(format='%m/%d/%Y'))
         form.helper.layout = Layout(
             Div(
@@ -235,7 +231,7 @@ class FactureCreateView(CreateView):
         return super(FactureCreateView, self).form_valid(form)
 
 class FournisseurCreateView(CreateView):
-    model = Fournisseur
+    model = Utilisateur
     template_name = 'bill/CRUD/create.html'
     fields = '__all__'
 
@@ -249,13 +245,13 @@ class FournisseurCreateView(CreateView):
         return form
 
 class FournisseurDeleteView(DeleteView):
-    model = Fournisseur
+    model = Utilisateur
     template_name = 'bill/CRUD/delete.html'
     success_url = reverse_lazy('fournisseurs_table')
 
 class FournisseurUpdateView(UpdateView):
-    model = Fournisseur
-    fields = '__all__'
+    model = Utilisateur
+    fields = ('first_name', 'last_name', 'adresse', 'tel', 'sexe')
     template_name = 'bill/CRUD/update.html'
 
     def get_form(self, form_class=None):
@@ -268,13 +264,44 @@ class FournisseurUpdateView(UpdateView):
         return form
 
 class FournisseurListView(SingleTableView):
-    template_name = 'bill/fournisseurs_table.html'
-    model= Fournisseur
-    table_class = FournisseurListTable
+    template_name = 'bill/CRUD/list.html'
+    model= Utilisateur
+
+    def get_context_data(self, **kwargs):
+        context = super(FournisseurListView, self).get_context_data(**kwargs)
+
+        table = FournisseurListTable(Utilisateur.objects.filter(user_type=2))
+        RequestConfig(self.request, paginate={"per_page": 2}).configure(table)
+        context['table'] = table
+        return context
+
+class ProduitListView(SingleTableView):
+    template_name = 'bill/produit_table.html'
+    model= Produit
+
+    def get_context_data(self, **kwargs):
+        context = super(ProduitListView, self).get_context_data(**kwargs)
+
+        table = ProduitsListTable(Produit.objects.all())
+        RequestConfig(self.request, paginate={"per_page": 7}).configure(table)
+        context['table'] = table
+        return context
+
+class FacturesListView(SingleTableView):
+    template_name = 'bill/CRUD/list.html'
+    model= Facture
+
+    def get_context_data(self, **kwargs):
+        context = super(FacturesListView, self).get_context_data(**kwargs)
+
+        table = FacturesListTable(Facture.objects.all())
+        RequestConfig(self.request, paginate={"per_page": 7}).configure(table)
+        context['table'] = table
+        return context
 
 class FournisseurProduitsListView(DetailView):
     template_name = 'bill/fournisseur_produits_table.html'
-    model = Fournisseur
+    model = Utilisateur
 
     def get_context_data(self, **kwargs):
         context = super(FournisseurProduitsListView, self).get_context_data(**kwargs)
@@ -295,7 +322,7 @@ class ProduitCreateView(CreateView):
         form.helper = FormHelper()
 
         form.fields['fournisseur'] = forms.ModelChoiceField(
-            queryset=Fournisseur.objects.filter(id=self.kwargs.get('fournisseur_pk')), initial=0)
+            queryset=Utilisateur.objects.filter(id=self.kwargs.get('fournisseur_pk')), initial=0)
         form.helper.add_input(Submit('submit', 'Créer', css_class='btn-primary'))
         form.helper.add_input(Button('cancel', 'Annuler', css_class='btn-secondary', onclick="window.history.back()"))
         self.success_url = reverse('fournisseur_produits_table', kwargs={'pk': self.kwargs.get('fournisseur_pk')})
@@ -327,8 +354,8 @@ class DashboardTablesView(MultiTableMixin, TemplateView):
     template_name = "bill/dashboard.html"
 
     tables = [
-        ClientChiffresTable(Client.objects.all().annotate(chiffre=Sum(F('factures__prix'))).order_by('-chiffre')),
-        FournisseurChiffresTable(Fournisseur.objects.all().annotate(
+        ClientChiffresTable(Utilisateur.objects.filter(user_type=1).annotate(chiffre=Sum(F('factures__prix'))).order_by('-chiffre')),
+        FournisseurChiffresTable(Utilisateur.objects.filter(user_type=2).annotate(
             chiffre=Sum(ExpressionWrapper(F('produits__prix')*F('produits__lignes__qte'),output_field=fields.FloatField()))).order_by('-chiffre'))
     ]
     print(tables)
@@ -336,3 +363,37 @@ class DashboardTablesView(MultiTableMixin, TemplateView):
         "per_page": 4
     }
 
+class HomeView(TemplateView):
+    template_name = 'bill/home.html'
+
+class SignUpView(TemplateView):
+    template_name = 'registration/signup.html'
+
+class ClientSignUpView(CreateView):
+    model = Utilisateur
+    form_class = ClientSignUpForm
+    template_name = 'registration/signup_form.html'
+
+    def get_context_data(self, **kwargs):
+        kwargs['user_type'] = 'client'
+        return super().get_context_data(**kwargs)
+
+    def form_valid(self, form):
+        user = form.save()
+        login(self.request, user)
+        return redirect('home')
+
+
+class FournisseurSignUpView(CreateView):
+    model = Utilisateur
+    form_class = FournisseurSignUpForm
+    template_name = 'registration/signup_form.html'
+
+    def get_context_data(self, **kwargs):
+        kwargs['user_type'] = 'fournisseur'
+        return super().get_context_data(**kwargs)
+
+    def form_valid(self, form):
+        user = form.save()
+        login(self.request, user)
+        return redirect('home')

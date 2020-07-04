@@ -20,8 +20,8 @@ class ClientListTable(tables.Table):
 
     class Meta:
         template_name = "django_tables2/bootstrap4.html"
-        model=Client
-        fields=('nom','prenom','adresse','tel','sexe','chiffre')
+        model=Utilisateur
+        fields=('first_name','last_name','adresse','tel','sexe','chiffre')
 
 
 class ClientFacturesListTable(tables.Table):
@@ -37,11 +37,12 @@ class ClientFacturesListTable(tables.Table):
 class FournisseurListTable(tables.Table):
     action= '<a href="{% url "fournisseur_update" pk=record.id %}" class="btn btn-warning">Modifier</a>\
             <a href="{% url "fournisseur_delete" pk=record.id  %}" class="btn btn-danger">Supprimer</a>\
-            <a href="{% url "fournisseur_produits_table" pk=record.id %}" class="btn btn-primary">Liste de factures</a>'
+            <a href="{% url "fournisseur_produits_table" pk=record.id %}" class="btn btn-primary">Liste de produits</a>'
     edit   = tables.TemplateColumn(action)
     class Meta:
-        model = Fournisseur
+        model = Utilisateur
         template_name = "django_tables2/bootstrap4.html"
+        fields = ('first_name', 'last_name', 'adresse', 'tel', 'sexe', 'chiffre')
 
 
 class FournisseurProduitsListTable(tables.Table):
@@ -53,14 +54,24 @@ class FournisseurProduitsListTable(tables.Table):
         model = Produit
         template_name = "django_tables2/bootstrap4.html"
 
+class ProduitsListTable(tables.Table):
+    class Meta:
+        model = Produit
+        template_name = "django_tables2/bootstrap4.html"
+
+class FacturesListTable(tables.Table):
+    class Meta:
+        model = Facture
+        template_name = "django_tables2/bootstrap4.html"
+
 class ClientChiffresTable(tables.Table):
     class Meta:
         template_name = "django_tables2/bootstrap4.html"
-        model=Client
-        fields=('nom','prenom','adresse','tel','sexe','chiffre')
+        model=Utilisateur
+        fields=('first_name','last_name','adresse','tel','sexe','chiffre')
 
 class FournisseurChiffresTable(tables.Table):
     class Meta:
         template_name = "django_tables2/bootstrap4.html"
-        model=Fournisseur
-        fields=('nom','chiffre')
+        model=Utilisateur
+        fields = ('first_name', 'last_name', 'adresse', 'tel', 'sexe', 'chiffre')

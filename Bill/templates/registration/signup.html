@@ -1,0 +1,8 @@
+{% extends 'bill/base.html' %}
+
+{% block content %}
+  <h2>S'inscrire</h2>
+  <p class="lead">Choisissez votre profile</p>
+  <a href="{% url 'fournisseur_signup' %}" class="btn btn-student btn-lg" role="button">Fournisseur</a>
+  <a href="{% url 'client_signup' %}" class="btn btn-teacher btn-lg" role="button">Client</a>
+{% endblock %}
