@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'bootstrap_datepicker_plus',
     'jchart',
     'social_django',
+    'django_filters',
     'django_select2',
 ]
 
@@ -172,6 +173,26 @@ SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'lobeliasteam@gmail.com'
-EMAIL_HOST_PASSWORD = 'gfgcklisma-@*'
+EMAIL_HOST_USER = 'tp.tp.tp.tp.tp05@gmail.com'
+EMAIL_HOST_PASSWORD = 'tp1tp2tp3tp4tp5'
 EMAIL_USE_TLS = True
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    },
+    'select2': {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/2",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+# Set the cache backend to select2
+SELECT2_CACHE_BACKEND = 'select2'

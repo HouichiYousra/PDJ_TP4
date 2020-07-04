@@ -25,7 +25,7 @@ urlpatterns = [
 
     path('admin/', admin.site.urls),
 
-    re_path(r'^produits_table/', views.ProduitListView.as_view(extra_context={'type': 'produit'}),
+    re_path(r'^produits_table/', views.FilteredProduitListView.as_view(extra_context={'type': 'produit'}),
             name='produits_table'),
 
 re_path(r'^factures_table/', views.FacturesListView.as_view(extra_context={'type': 'facture'}),
@@ -44,10 +44,11 @@ re_path(r'^factures_table/', views.FacturesListView.as_view(extra_context={'type
     re_path(r'^dashboard/', views.DashboardTablesView.as_view(extra_context={'line_chart': LineChart(), 'radar_chart': RadarChart()}),name='dashboard'),
 
     path('home/',HomeView.as_view(),name='home'),
-
+    path("select2/", include("django_select2.urls")),
     path('accounts/', include('django.contrib.auth.urls')),
     path('accounts/signup/', SignUpView.as_view(), name='signup'),
     path('accounts/signup/client/', ClientSignUpView.as_view(), name='client_signup'),
     path('accounts/signup/fournisseur/', FournisseurSignUpView.as_view(), name='fournisseur_signup'),
     url(r'^oauth/', include('social_django.urls', namespace='social')),
+
 ]

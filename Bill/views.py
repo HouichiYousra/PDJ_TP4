@@ -8,7 +8,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.views.generic import TemplateView
 from django_tables2 import SingleTableView, MultiTableMixin
-
+from django.views import generic
 from django.views.generic.edit import UpdateView, CreateView, DeleteView
 from django.views.generic.detail import DetailView
 from django_tables2.config import RequestConfig
@@ -17,10 +17,11 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Button, Layout, Div, Field, Fieldset, HTML, ButtonHolder, LayoutObject
 from django.urls import reverse_lazy
 
-
+from django_filters.views import FilterView
+from django_tables2.views import SingleTableMixin
 # Create your views here.
 from Bill.chart import LineChart
-from Bill.forms import ClientSignUpForm, FournisseurSignUpForm
+from Bill.forms import ClientSignUpForm, FournisseurSignUpForm, PoduitSearchForm
 from Bill.tables import *
 
 
@@ -397,3 +398,17 @@ class FournisseurSignUpView(CreateView):
         user = form.save()
         login(self.request, user)
         return redirect('home')
+
+
+class ProduitSearchView(generic.CreateView):
+    model = Produit
+    form_class = PoduitSearchForm
+    success_url = "/"
+
+
+class FilteredProduitListView(SingleTableMixin, FilterView):
+    table_class = ProduitsListTable
+    model = Produit
+    template_name = "bill/produit_filtre.html"
+
+    filterset_class = ProduitFilter
