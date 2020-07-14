@@ -15,6 +15,13 @@
               Fournisseur
             </a>
           </li>
+            <li class="nav-item">
+            <a class="nav-link" href="{% url 'commande_table' %}">
+              <span data-feather="file"></span>
+              Commandes
+            </a>
+          </li>
+
         {% endif %}
           <li class="nav-item">
             <a class="nav-link" href="{% url 'produits_table' %}">
@@ -22,26 +29,53 @@
               Produits
             </a>
           </li>
-        {% if user.is_staff %}
-          <li class="nav-item">
+
+
+            {% if user.is_superuser %}
+                <li class="nav-item">
             <a class="nav-link" href="{% url 'factures_table' %}">
               <span data-feather="users"></span>
               Factures
             </a>
           </li>
-
           <li class="nav-item">
             <a class="nav-link" href="{% url 'clients_table' %}">
               <span data-feather="bar-chart-2"></span>
               Clients
             </a>
           </li>
-        {% endif %}
-            {% if user.is_client %}
-          <li class="nav-item">
+            {% endif %}
+         {% if user.is_fournisseur %}
+                 <li class="nav-item">
+            <a class="nav-link" href="{% url 'fournisseur_produits_table' pk=user.id %}">
+              <span data-feather="layers"></span>
+              Mes produit
+            </a>
+          </li>
+              <li class="nav-item">
             <a class="nav-link" href="#">
               <span data-feather="layers"></span>
-              Mon Panier
+              Statistique
+            </a>
+          </li>
+        {% endif %}
+            {% if user.is_client %}
+                 <li class="nav-item">
+            <a class="nav-link" href="{% url 'panier_table' %}">
+              <span data-feather="layers"></span>
+              Mon pannier
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'commande_client' %}">
+              <span data-feather="layers"></span>
+              Mes Commandes
+            </a>
+          </li>
+                 <li class="nav-item">
+            <a class="nav-link" href="{% url 'client_factures_table' pk=user.id%}">
+              <span data-feather="users"></span>
+              Factures
             </a>
           </li>
             {% endif %}

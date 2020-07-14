@@ -2,7 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django import utils
 from django.dispatch import receiver
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_init
 from django.urls import reverse
 from .sendEmail import send
 
@@ -20,6 +20,7 @@ class Utilisateur(AbstractUser):
         ('F', 'Feminin')
     )
 
+    email = models.CharField(max_length=10, null=True, blank=True)
     user_type = models.PositiveSmallIntegerField(choices=USER_TYPE_CHOICES,null=True,blank=True)
     adresse = models.TextField(null=True, blank=True)
     tel = models.CharField(max_length=10, null=True, blank=True)
@@ -93,6 +94,11 @@ class LigneFacture(models.Model):
         self.facture.save()
 
 
+class Panier(models.Model):
+    client = models.ForeignKey(Utilisateur, on_delete=models.CASCADE, related_name='panier')
+    date = models.DateField(default=utils.timezone.now)
+    valide=models.BooleanField(default=False)
+
 class Commande(models.Model):
     client = models.ForeignKey(Utilisateur, on_delete=models.CASCADE, related_name='commandes')
     date = models.DateField(default=utils.timezone.now)
@@ -105,8 +111,20 @@ class LigneCommande(models.Model):
     commande = models.ForeignKey(Commande, on_delete=models.CASCADE, related_name='lignes_com')
 
 
+class LignePanier(models.Model):
+    produit = models.ForeignKey(Produit, on_delete=models.CASCADE,related_name='lignes_pan')
+    qte = models.IntegerField(default=1)
+    panier = models.ForeignKey(Panier, on_delete=models.CASCADE, related_name='lignes_pan')
+
+
+
+
+
 
 
 @receiver(post_save, sender=Facture)
-def define_permission(sender, **kwargs):
+def confirme_commande(sender, **kwargs):
     send("confirmer votre commande", "confirmation facture", ["gh_ishakboushaki@esi.dz"])
+
+
+

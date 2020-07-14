@@ -4,6 +4,7 @@ from django.contrib.auth import login
 from django.db import transaction
 from django.db.models import Sum, F, ExpressionWrapper, fields, Count
 from django.forms import formset_factory, ModelForm, inlineformset_factory
+from django.http import Http404
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.views.generic import TemplateView
@@ -16,7 +17,8 @@ from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Button, Layout, Div, Field, Fieldset, HTML, ButtonHolder, LayoutObject
 from django.urls import reverse_lazy
-
+from django.contrib import messages
+from django.contrib.messages.views import SuccessMessageMixin
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
 # Create your views here.
@@ -33,15 +35,15 @@ def facture_detail_view(request, pk):
     context['prix'] = total
     return render(request, 'bill/facture_detail.html', context)
 
-class FactureUpdate(UpdateView):
+class FactureUpdate(SuccessMessageMixin,UpdateView):
     model = Facture
     fields = ['client', 'date']
     template_name = 'bill/CRUD/update.html'
-
+    success_message = "La facture a été mise à jour avec succès"
     def get_form(self, form_class=None):
+        messages.warning(self.request, "vous allez ajouter la facture")
         form = super().get_form(form_class)
         form.helper = FormHelper()
-
         form.fields['client']=forms.ModelChoiceField(queryset=Utilisateur.objects.filter(id=self.kwargs.get('client_pk')), initial=0)
         form.helper.add_input(Submit('submit','Modifier', css_class='btn-primary'))
         form.helper.add_input(Button('cancel', 'Annuler', css_class='btn-secondary', onclick="window.history.back()"))
@@ -60,12 +62,14 @@ class FactureDetailView(DetailView):
         context['table'] = table
         return context
 
-class FactureDelete(DeleteView):
+class FactureDelete(SuccessMessageMixin,DeleteView):
     model = Facture
     template_name = 'bill/CRUD/delete.html'
+    success_message = "La facture a été suprime avec succès"
     def get_success_url(self):
         self.success_url = reverse('client_factures_table', kwargs={'pk':self.kwargs.get('client_pk')})
         return self.success_url
+
 class LigneFactureCreateView(CreateView):
     model = LigneFacture
     template_name = 'bill/CRUD/create.html'
@@ -81,27 +85,53 @@ class LigneFactureCreateView(CreateView):
         self.success_url = reverse('facture_table_detail', kwargs={'pk':self.kwargs.get('facture_pk')})
         return form
 
-class LigneFactureUpdateView(UpdateView):
+class LigneFactureUpdateView(SuccessMessageMixin,UpdateView):
     model = LigneFacture
     template_name = 'bill/CRUD/update.html'
     fields = ['facture', 'produit', 'qte']
-    
+    success_message = "La facture a été mise à jour avec succès"
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
         form.helper = FormHelper()
-
+        messages.warning(self.request, "Attention, vous allez modifier la facture")
         form.fields['facture']=forms.ModelChoiceField(queryset=Facture.objects.filter(id=self.kwargs.get('facture_pk')), initial=0)
         form.helper.add_input(Submit('submit','Modifier', css_class='btn-primary'))
         form.helper.add_input(Button('cancel', 'Annuler', css_class='btn-secondary', onclick="window.history.back()"))
         self.success_url = reverse('facture_table_detail', kwargs={'pk':self.kwargs.get('facture_pk')})
         return form
 
-class LigneFactureDeleteView(DeleteView):
+class LigneFactureDeleteView(SuccessMessageMixin,DeleteView):
     model = LigneFacture
     template_name = 'bill/CRUD/delete.html'
-    
+    success_message = "La facture a été supprimer avec succès"
+
     def get_success_url(self):
+        messages.warning(self.request, "Attention, vous allez supprimer la facture")
         self.success_url = reverse('facture_table_detail', kwargs={'pk':self.kwargs.get('facture_pk')})
+        return self.success_url
+
+class LignePanierUpdateView(SuccessMessageMixin,UpdateView):
+    model = LignePanier
+    template_name = 'bill/CRUD/update.html'
+    fields = ['qte']
+    success_message = "Le panier a été mise à jour avec succès"
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.helper = FormHelper()
+        messages.warning(self.request, "Attention, vous allez modifier le panier")
+        form.helper.add_input(Submit('submit','Modifier', css_class='btn-primary'))
+        form.helper.add_input(Button('cancel', 'Annuler', css_class='btn-secondary', onclick="window.history.back()"))
+        self.success_url = reverse('panier_table')
+        return form
+
+class LignePanierDeleteView(SuccessMessageMixin,DeleteView):
+    model = LignePanier
+    template_name = 'bill/CRUD/delete.html'
+    success_message = "La ligne panier a été supprimer avec succès"
+
+    def get_success_url(self):
+        messages.warning(self.request, "Attention, vous allez supprimer la ligne panuer")
+        self.success_url = reverse('panier_table')
         return self.success_url
 
 class ClientListView(SingleTableView):
@@ -284,7 +314,7 @@ class ProduitListView(SingleTableView):
         context = super(ProduitListView, self).get_context_data(**kwargs)
 
         table = ProduitsListTable(Produit.objects.all())
-        RequestConfig(self.request, paginate={"per_page": 7}).configure(table)
+        RequestConfig(self.request, paginate={"per_page": 4}).configure(table)
         context['table'] = table
         return context
 
@@ -295,8 +325,46 @@ class FacturesListView(SingleTableView):
     def get_context_data(self, **kwargs):
         context = super(FacturesListView, self).get_context_data(**kwargs)
 
-        table = FacturesListTable(Facture.objects.all())
-        RequestConfig(self.request, paginate={"per_page": 7}).configure(table)
+        table = ClientFacturesListTable(Facture.objects.all())
+        RequestConfig(self.request, paginate={"per_page": 4}).configure(table)
+        context['table'] = table
+        return context
+
+class CommandeListView(SingleTableView):
+    template_name = 'bill/commande_table.html'
+    model= Commande
+
+    def get_context_data(self, **kwargs):
+        context = super(CommandeListView, self).get_context_data(**kwargs)
+
+        table = CommandeAdminListTable(Commande.objects.all())
+        RequestConfig(self.request, paginate={"per_page": 5}).configure(table)
+        context['table'] = table
+        return context
+
+class CommandeClientListView(SingleTableView):
+    template_name = 'bill/commande_table.html'
+    model= Commande
+
+    def get_context_data(self, **kwargs):
+        context = super(CommandeClientListView, self).get_context_data(**kwargs)
+
+        table = CommandeListTable(Commande.objects.all().filter(client=self.request.user))
+        RequestConfig(self.request, paginate={"per_page": 5}).configure(table)
+        context['table'] = table
+        return context
+
+
+
+class PanierListView(SingleTableView):
+    template_name = 'bill/panier.html'
+    model= LignePanier
+
+    def get_context_data(self, **kwargs):
+        context = super(PanierListView, self).get_context_data(**kwargs)
+
+        table = PanierListTable(LignePanier.objects.all().filter(panier__client=self.request.user))
+        RequestConfig(self.request, paginate={"per_page": 5}).configure(table)
         context['table'] = table
         return context
 
@@ -308,6 +376,19 @@ class FournisseurProduitsListView(DetailView):
         context = super(FournisseurProduitsListView, self).get_context_data(**kwargs)
 
         table = FournisseurProduitsListTable(Produit.objects.filter(fournisseur=self.kwargs.get('pk')))
+        RequestConfig(self.request, paginate={"per_page": 5}).configure(table)
+        context['table'] = table
+        return context
+
+
+class CommandeProduitsListView(DetailView):
+    template_name = 'bill/fournisseur_produits_table.html'
+    model = Commande
+
+    def get_context_data(self, **kwargs):
+        context = super(CommandeProduitsListView, self).get_context_data(**kwargs)
+
+        table = CommandeProduitsListTable(Produit.objects.filter(lignes_com__commande=self.kwargs.get('pk')))
         RequestConfig(self.request, paginate={"per_page": 5}).configure(table)
         context['table'] = table
         return context
@@ -370,7 +451,7 @@ class HomeView(TemplateView):
 class SignUpView(TemplateView):
     template_name = 'registration/signup.html'
 
-class ClientSignUpView(CreateView):
+class ClientSignUpView(SuccessMessageMixin,CreateView):
     model = Utilisateur
     form_class = ClientSignUpForm
     template_name = 'registration/signup_form.html'
@@ -412,3 +493,59 @@ class FilteredProduitListView(SingleTableMixin, FilterView):
     template_name = "bill/produit_filtre.html"
 
     filterset_class = ProduitFilter
+
+def create_panier(request):
+    if request.method == "POST":
+        pks = request.POST.getlist("selection")
+        selected_objects = Produit.objects.filter(pk__in=pks)
+        utilisateur= Utilisateur.objects.get(pk= request.user.pk)
+        if Panier.objects.filter(client=utilisateur).exists() == False:
+            panier=Panier.objects.create(client=utilisateur)
+            panier.save()
+        else:
+            panier= Panier.objects.get(client=utilisateur)
+        print("count" + str(selected_objects.count()))
+        for obj in selected_objects:
+            if LignePanier.objects.filter(produit=obj, panier__client=utilisateur).exists():
+                ligne= LignePanier.objects.get(produit=obj)
+                ligne.qte =ligne.qte+1
+                ligne.save()
+            else:
+                lign_panier= LignePanier.objects.create(panier=panier, produit=obj)
+                lign_panier.save()
+        return  redirect('panier_table')
+
+
+
+def create_commande(request):
+    if request.method == "POST":
+        pks = request.POST.getlist("id")
+        selected_objects = LignePanier.objects.filter(pk__in=pks)
+        utilisateur= Utilisateur.objects.get(pk= request.user.pk)
+        commande=Commande.objects.create(client=utilisateur)
+        commande.save()
+        print("count" + str(selected_objects.count()))
+        for obj in selected_objects:
+            lign_commande= LigneCommande.objects.create(commande=commande, produit=obj.produit, qte=obj.qte)
+            lign_commande.save()
+        LignePanier.objects.filter(pk__in=pks).delete()
+        return  redirect('commande_client')
+
+def valide_commande(request, pk):
+    if request.method == "POST":
+        pks = request.POST.get("id")
+        print("iddd", str(pks))
+        commande = Commande.objects.get(pk=pk)
+        commande.valide= True
+        commande.save()
+        utilisateur = Utilisateur.objects.get(pk=request.user.pk)
+        facture = Facture.objects.create(client=utilisateur)
+        facture.save()
+        lignes= LigneCommande.objects.filter(commande=commande)
+        for l in lignes:
+            facture_ligne= LigneFacture.objects.create(facture=facture, produit=l.produit, qte=l.qte)
+            facture_ligne.calculPrix()
+            facture_ligne.save()
+        facture.calculPrixTotal()
+        facture.save()
+        return redirect('commande_table')

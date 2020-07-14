@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.urls import re_path, path, include
 from Bill import views
 from Bill.chart import LineChart, RadarChart
-from Bill.views import SignUpView, ClientSignUpView, HomeView, FournisseurSignUpView
+from Bill.views import SignUpView, ClientSignUpView, HomeView, FournisseurSignUpView, create_panier,create_commande,valide_commande
 
 urlpatterns = [
     re_path(r'^facture_detail/(?P<pk>\d+)/$', views.facture_detail_view, name='facture_detail'),
@@ -13,6 +13,11 @@ urlpatterns = [
     re_path(r'^lignefacture_update/(?P<pk>\d+)/(?P<facture_pk>\d+)/$', views.LigneFactureUpdateView.as_view(extra_context={'type':'ligne facture'}), name='lignefacture_update'),
     re_path(r'^facture_update/(?P<pk>\d+)/(?P<client_pk>\d+)/$', views.FactureDetailView.as_view(extra_context={'type':'facture'}), name='facture_update'),
     re_path(r'^facture_delete/(?P<pk>\d+)/(?P<client_pk>\d+)/$', views.FactureDelete.as_view(extra_context={'type':'facture'}), name='facture_delete'),
+
+    re_path(r'^lignepanier_delete/(?P<pk>\d+)/(?P<panier_pk>\d+)/$',
+            views.LignePanierDeleteView.as_view(extra_context={'type': 'ligne panier'}), name='lignepanier_delete'),
+    re_path(r'^lignepanier_update/(?P<pk>\d+)/(?P<panier_pk>\d+)/$',
+            views.LignePanierUpdateView.as_view(extra_context={'type': 'ligne panier'}), name='lignepanier_update'),
 
     re_path(r'^clients_table/', views.ClientListView.as_view(extra_context={'type':'client'}), name='clients_table'),
     re_path(r'^client_create/', views.ClientCreateView.as_view(extra_context={'type':'client'}), name='client_create'),
@@ -28,8 +33,16 @@ urlpatterns = [
     re_path(r'^produits_table/', views.FilteredProduitListView.as_view(extra_context={'type': 'produit'}),
             name='produits_table'),
 
+re_path(r'^panier_table/', views.PanierListView.as_view(extra_context={'type': 'panier'}),
+            name='panier_table'),
 re_path(r'^factures_table/', views.FacturesListView.as_view(extra_context={'type': 'facture'}),
             name='factures_table'),
+
+    re_path(r'^commande_table/', views.CommandeListView.as_view(extra_context={'type': 'commande'}),
+            name='commande_table'),
+
+    re_path(r'^commande_client/', views.CommandeClientListView.as_view(extra_context={'type': 'commande'}),
+            name='commande_client'),
 
     re_path(r'^fournisseurs_table/', views.FournisseurListView.as_view(extra_context={'type':'fournisseur'}), name='fournisseurs_table'),
     re_path(r'^fournisseur_create/', views.FournisseurCreateView.as_view(extra_context={'type':'fournisseur'}), name='fournisseur_create'),
@@ -43,12 +56,23 @@ re_path(r'^factures_table/', views.FacturesListView.as_view(extra_context={'type
     re_path(r'^produit_delete/(?P<pk>\d+)/(?P<fournisseur_pk>\d+)/$', views.ProduitDeleteView.as_view(extra_context={'type':'produit'}), name='produit_delete'),
     re_path(r'^dashboard/', views.DashboardTablesView.as_view(extra_context={'line_chart': LineChart(), 'radar_chart': RadarChart()}),name='dashboard'),
 
+    re_path(r'^commande/(?P<pk>\d+)/produits_table/',
+            views.CommandeProduitsListView.as_view(extra_context={'type': 'commande'}),
+            name='commande_produits_table'),
+
+    re_path(r'^commande_valide/(?P<pk>\d+)',
+            valide_commande,
+            name='commande_valide'),
+
+    path('create_panier/',create_panier,name='create_panier'),
+    path('create_commande/', create_commande, name='create_commande'),
     path('home/',HomeView.as_view(),name='home'),
     path("select2/", include("django_select2.urls")),
     path('accounts/', include('django.contrib.auth.urls')),
     path('accounts/signup/', SignUpView.as_view(), name='signup'),
     path('accounts/signup/client/', ClientSignUpView.as_view(), name='client_signup'),
     path('accounts/signup/fournisseur/', FournisseurSignUpView.as_view(), name='fournisseur_signup'),
+
     url(r'^oauth/', include('social_django.urls', namespace='social')),
 
 ]

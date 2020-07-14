@@ -2,7 +2,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.db import transaction
 from django_select2 import forms as s2forms
 from django import forms
-from Bill.models import Utilisateur, Produit
+from Bill.models import Utilisateur, Produit, Panier, LignePanier
 
 
 class ClientSignUpForm(UserCreationForm):
@@ -62,3 +62,8 @@ class PoduitSearchForm(forms.ModelForm):
             "fournisseur" : FournisseurWidget,
             "categorie": CategorieWidget,
         }
+
+class PanierAddForm(forms.ModelForm):
+    class Meta:
+        model= LignePanier
+        fields= "__all__"

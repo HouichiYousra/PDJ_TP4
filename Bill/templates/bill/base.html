@@ -1,30 +1,21 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
      <head>
-
     <meta charset="utf-8">
           <title>TP4</title>
     {% load bootstrap4 django_tables2 %}
 	{% bootstrap_css %}         {# Embed Bootstrap CSS #}
 	{% bootstrap_javascript jquery='full' %}  {# Embed Bootstrap JS+jQuery #}
      <link rel="stylesheet" href="{% static 'css/static/custom.css' %}"/>
-
-
   </head>
-
 <body>
 {% include 'bill/navbar.html' %}
-
 <div class="container-fluid">
 <div class="row">
-{% if user.is_authenticated %}
+    {% if user.is_authenticated %}
 <div class="col-2>
-
-
     {% include 'bill/sidebar.html' %}
-
 </div>
 <div class="col-10">
     {% else %}
@@ -38,10 +29,7 @@
 </div>
 
 </div>
-
 {% include 'bill/footer.html' %}
-
-
 
 </body>
  <script src="https://use.fontawesome.com/4db4ac811a.js"></script>
